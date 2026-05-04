@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Free JSON Formatter &amp; Validator — Pretty Print, Minify, Tree View | BeLikeNative</title>
+<meta name="description" content="Free online JSON formatter, validator and beautifier. Pretty print, minify, tree view with collapsible nodes, JSON path display. Zero dependencies, works offline.">
+<meta name="keywords" content="json formatter, json validator, json beautifier, json viewer, json pretty print, json minify, json tree view">
+<link rel="canonical" href="https://theluckystrike.github.io/bln-json-formatter/">
+<meta property="og:title" content="Free JSON Formatter & Validator | BeLikeNative">
+<meta property="og:description" content="Pretty print, minify, validate and explore JSON with tree view. Free, zero dependencies.">
+<meta property="og:url" content="https://theluckystrike.github.io/bln-json-formatter/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Free JSON Formatter & Validator | BeLikeNative">
+<meta name="twitter:description" content="Pretty print, minify, validate and explore JSON with tree view. Free, zero dependencies.">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"JSON Formatter & Validator","url":"https://theluckystrike.github.io/bln-json-formatter/","description":"Free online JSON formatter, validator and beautifier with tree view and JSON path.","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Organization","name":"BeLikeNative","url":"https://belikenative.com"}}
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f8fafc;--surface:#ffffff;--text:#1e293b;--border:#e2e8f0;--primary:#2563eb;--success:#10b981;--error:#ef4444;--muted:#64748b;--key:#2563eb;--string:#059669;--number:#d97706;--boolean:#7c3aed;--null:#6b7280;--bracket:#374151;--toolbar-bg:#f1f5f9;--hover:#e2e8f0}
+@media(prefers-color-scheme:dark){:root{--bg:#0f172a;--surface:#1e293b;--text:#e2e8f0;--border:#334155;--toolbar-bg:#1e293b;--hover:#334155;--bracket:#94a3b8}}
+[data-theme="dark"]{--bg:#0f172a;--surface:#1e293b;--text:#e2e8f0;--border:#334155;--toolbar-bg:#1e293b;--hover:#334155;--bracket:#94a3b8}
+[data-theme="light"]{--bg:#f8fafc;--surface:#ffffff;--text:#1e293b;--border:#e2e8f0;--toolbar-bg:#f1f5f9;--hover:#e2e8f0;--bracket:#374151}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+header{padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:var(--surface)}
+header h1{font-size:1.5rem;color:var(--primary)}
+header .subtitle{font-size:0.875rem;color:var(--muted)}
+.toolbar{display:flex;flex-wrap:wrap;gap:0.5rem;padding:0.75rem 1.5rem;background:var(--toolbar-bg);border-bottom:1px solid var(--border);align-items:center}
+.toolbar button{padding:0.4rem 0.75rem;border:1px solid var(--border);border-radius:0.375rem;background:var(--surface);color:var(--text);cursor:pointer;font-size:0.8125rem;font-weight:500;transition:background 0.15s}
+.toolbar button:hover{background:var(--hover)}
+.toolbar button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.toolbar .spacer{flex:1}
+.toolbar select{padding:0.4rem;border:1px solid var(--border);border-radius:0.375rem;background:var(--surface);color:var(--text);font-size:0.8125rem}
+.status{display:flex;align-items:center;gap:0.375rem;font-size:0.8125rem;padding:0.4rem 0.75rem;border-radius:0.375rem}
+.status.valid{color:var(--success);background:rgba(16,185,129,0.1)}
+.status.invalid{color:var(--error);background:rgba(239,68,68,0.1)}
+.stats{font-size:0.75rem;color:var(--muted);display:flex;gap:1rem;align-items:center}
+.main{display:flex;flex:1;overflow:hidden}
+.pane{flex:1;display:flex;flex-direction:column;min-width:0}
+.pane-header{padding:0.5rem 1rem;font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
+.pane+.pane{border-left:1px solid var(--border)}
+textarea{flex:1;width:100%;padding:1rem;font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace;font-size:0.8125rem;line-height:1.6;border:none;outline:none;resize:none;background:var(--surface);color:var(--text)}
+.output-area{flex:1;overflow:auto;padding:1rem;font-family:'SF Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace;font-size:0.8125rem;line-height:1.6;background:var(--surface);white-space:pre-wrap;word-break:break-word}
+.error-banner{padding:0.75rem 1rem;background:rgba(239,68,68,0.1);border:1px solid var(--error);border-radius:0.375rem;color:var(--error);margin:0.75rem;font-size:0.8125rem}
+.json-key{color:var(--key)}
+.json-string{color:var(--string)}
+.json-number{color:var(--number)}
+.json-boolean{color:var(--boolean)}
+.json-null{color:var(--null)}
+.json-bracket{color:var(--bracket)}
+.tree-node{padding:0.125rem 0;cursor:default}
+.tree-toggle{cursor:pointer;user-select:none;display:inline-block;width:1rem;text-align:center;color:var(--muted)}
+.tree-toggle:hover{color:var(--primary)}
+.tree-key{color:var(--key);cursor:pointer}
+.tree-key:hover{text-decoration:underline}
+.tree-value{cursor:pointer}
+.tree-value:hover{text-decoration:underline}
+.tree-children{padding-left:1.25rem}
+.tree-children.collapsed{display:none}
+.json-path-bar{padding:0.375rem 1rem;font-size:0.75rem;color:var(--muted);border-top:1px solid var(--border);background:var(--toolbar-bg);min-height:1.75rem;font-family:'SF Mono',SFMono-Regular,Consolas,monospace}
+.cta{padding:1rem 1.5rem;background:var(--surface);border-top:1px solid var(--border);text-align:center;font-size:0.8125rem;color:var(--muted)}
+.cta a{color:var(--primary);text-decoration:none;font-weight:500}
+.cta a:hover{text-decoration:underline}
+footer{padding:1rem 1.5rem;border-top:1px solid var(--border);background:var(--surface);text-align:center;font-size:0.75rem;color:var(--muted)}
+footer a{color:var(--primary);text-decoration:none;margin:0 0.5rem}
+footer a:hover{text-decoration:underline}
+@media(max-width:768px){.main{flex-direction:column}.pane+.pane{border-left:none;border-top:1px solid var(--border)}.pane{min-height:35vh}}
+</style>
+</head>
+<body>
+<header>
+<h1>JSON Formatter &amp; Validator</h1>
+<span class="subtitle">by <a href="https://belikenative.com" style="color:var(--primary);text-decoration:none">BeLikeNative</a></span>
+</header>
+<div class="toolbar" id="toolbar">
+<button id="btn-format" title="Pretty print JSON">Format</button>
+<button id="btn-minify" title="Minify JSON">Minify</button>
+<button id="btn-tree" title="Toggle tree view">Tree View</button>
+<button id="btn-copy" title="Copy output">Copy</button>
+<button id="btn-clear" title="Clear input and output">Clear</button>
+<button id="btn-sample" title="Load sample JSON">Sample</button>
+<label style="font-size:0.8125rem;color:var(--muted);display:flex;align-items:center;gap:0.25rem">
+Indent: <select id="sel-indent"><option value="2">2</option><option value="4">4</option></select>
+</label>
+<div class="spacer"></div>
+<div class="stats" id="stats"></div>
+<div class="status" id="status"></div>
+<button id="btn-theme" title="Toggle dark/light mode">Theme</button>
+</div>
+<div class="main">
+<div class="pane">
+<div class="pane-header">Input</div>
+<textarea id="input" placeholder="Paste your JSON here..." spellcheck="false"></textarea>
+</div>
+<div class="pane">
+<div class="pane-header">Output</div>
+<div class="output-area" id="output"></div>
+<div class="json-path-bar" id="path-bar">Click a value in tree view to see its JSON path</div>
+</div>
+</div>
+<div class="cta">Building APIs? Make sure your documentation is as clean as your JSON. BeLikeNative helps developers write clear, professional docs and comments. <a href="https://belikenative.com">Try Free &rarr;</a></div>
+<footer>
+<a href="https://belikenative.com">BeLikeNative</a>
+<a href="https://theluckystrike.github.io/bln-word-counter/">Word Counter</a>
+<a href="https://theluckystrike.github.io/bln-tone-analyzer/">Tone Analyzer</a>
+<a href="https://theluckystrike.github.io/bln-case-converter/">Case Converter</a>
+<a href="https://theluckystrike.github.io/bln-text-diff/">Text Diff</a>
+<a href="https://theluckystrike.github.io/bln-markdown-preview/">Markdown Preview</a>
+</footer>
+<script>
+(function() {
+"use strict";
+
+/* ===== CONSTANTS (bounded) ===== */
+var MAX_INPUT = 1000000;
+var MAX_DEPTH = 50;
+var MAX_KEYS = 10000;
+var DEBOUNCE_MS = 300;
+
+/* ===== DOM REFERENCES ===== */
+var inputEl = document.getElementById("input");
+var outputEl = document.getElementById("output");
+var statusEl = document.getElementById("status");
+var statsEl = document.getElementById("stats");
+var pathBar = document.getElementById("path-bar");
+var selIndent = document.getElementById("sel-indent");
+
+/* ===== STATE (encapsulated in IIFE) ===== */
+var state = Object.freeze({
+  createState: function() {
+    return { mode: "format", lastValid: null, debounceTimer: null };
+  }
+});
+var appState = state.createState();
+
+/* ===== ASSERTIONS ===== */
+function assert(condition, message) {
+  if (!condition) {
+    throw new Error("Assertion failed: " + message);
+  }
+}
+
+/* ===== UTILITY: getIndent ===== */
+function getIndent() {
+  var val = parseInt(selIndent.value, 10);
+  assert(typeof val === "number", "indent must be number");
+  assert(val === 2 || val === 4, "indent must be 2 or 4");
+  return val;
+}
+
+/* ===== UTILITY: escapeHtml ===== */
+function escapeHtml(str) {
+  assert(typeof str === "string", "escapeHtml requires string");
+  var escaped = str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+  assert(typeof escaped === "string", "escapeHtml must return string");
+  return escaped;
+}
+
+/* ===== UTILITY: truncateInput ===== */
+function truncateInput(raw) {
+  assert(typeof raw === "string", "truncateInput requires string");
+  var result = raw.length > MAX_INPUT ? raw.slice(0, MAX_INPUT) : raw;
+  assert(result.length <= MAX_INPUT, "result must be bounded");
+  return result;
+}
+
+/* ===== PARSE JSON SAFELY ===== */
+function parseJson(raw) {
+  assert(typeof raw === "string", "parseJson requires string input");
+  var trimmed = raw.trim();
+  assert(trimmed.length <= MAX_INPUT, "input must be within bounds");
+  if (trimmed.length === 0) {
+    return { ok: false, error: "Empty input", parsed: null };
+  }
+  try {
+    var parsed = JSON.parse(trimmed);
+    return { ok: true, error: null, parsed: parsed };
+  } catch (e) {
+    var msg = e.message || "Unknown parse error";
+    return { ok: false, error: msg, parsed: null };
+  }
+}
+
+/* ===== COMPUTE DEPTH (iterative) ===== */
+function computeDepth(obj) {
+  assert(obj !== undefined, "computeDepth requires argument");
+  var maxDepth = 0;
+  var stack = [{ val: obj, depth: 0 }];
+  var iterations = 0;
+  while (stack.length > 0 && iterations < MAX_KEYS) {
+    iterations++;
+    var item = stack.pop();
+    if (item.depth > maxDepth) { maxDepth = item.depth; }
+    if (maxDepth >= MAX_DEPTH) { break; }
+    if (item.val !== null && typeof item.val === "object") {
+      var keys = Object.keys(item.val);
+      var bound = Math.min(keys.length, MAX_KEYS - iterations);
+      for (var i = 0; i < bound; i++) {
+        stack.push({ val: item.val[keys[i]], depth: item.depth + 1 });
+      }
+    }
+  }
+  assert(typeof maxDepth === "number", "depth must be number");
+  assert(maxDepth <= MAX_DEPTH, "depth must be bounded");
+  return maxDepth;
+}
+
+/* ===== SYNTAX HIGHLIGHT ===== */
+function highlightJson(str) {
+  assert(typeof str === "string", "highlightJson requires string");
+  /* Apply regex on raw string, then escape content inside spans */
+  var result = str.replace(
+    /("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?|[\[\]{}])/g,
+    function(match) {
+      var cls = "json-number";
+      if (/^"/.test(match)) {
+        cls = /:$/.test(match) ? "json-key" : "json-string";
+      } else if (/true|false/.test(match)) {
+        cls = "json-boolean";
+      } else if (/null/.test(match)) {
+        cls = "json-null";
+      } else if (/[\[\]{}]/.test(match)) {
+        cls = "json-bracket";
+      }
+      return '<span class="' + cls + '">' + escapeHtml(match) + '</span>';
+    }
+  );
+  assert(typeof result === "string", "highlight must return string");
+  return result;
+}
+
+/* ===== FORMAT OUTPUT ===== */
+function formatOutput(parsed, indent) {
+  assert(parsed !== undefined, "formatOutput requires parsed");
+  assert(typeof indent === "number", "formatOutput requires indent number");
+  var formatted = JSON.stringify(parsed, null, indent);
+  assert(typeof formatted === "string", "stringify must return string");
+  return formatted;
+}
+
+/* ===== MINIFY OUTPUT ===== */
+function minifyOutput(parsed) {
+  assert(parsed !== undefined, "minifyOutput requires parsed");
+  var minified = JSON.stringify(parsed);
+  assert(typeof minified === "string", "minify must return string");
+  return minified;
+}
+
+/* ===== BUILD TREE VIEW (iterative, no recursion) ===== */
+function buildTreeHtml(data) {
+  assert(data !== undefined, "buildTreeHtml requires data");
+  var html = [];
+  /* Stack items: { val, key, path, depth } or { _close: bracket } */
+  var stack = [{ val: data, key: null, path: "$", depth: 0 }];
+  var iterations = 0;
+
+  while (stack.length > 0 && iterations < MAX_KEYS) {
+    iterations++;
+    var item = stack.pop();
+    /* Close markers emit closing tags */
+    if (item._close) {
+      html.push('</div><span class="json-bracket">' + item.bracket + '</span></div>');
+      continue;
+    }
+    if (item.depth > MAX_DEPTH) { continue; }
+    var nodeHtml = buildNodeHtml(item, stack);
+    html.push(nodeHtml);
+  }
+  var result = html.join("");
+  assert(typeof result === "string", "buildTreeHtml must return string");
+  return result;
+}
+
+/* ===== BUILD SINGLE NODE HTML ===== */
+function buildNodeHtml(item, stack) {
+  assert(item !== null && item !== undefined, "item must exist");
+  assert(Array.isArray(stack), "stack must be array");
+  var prefix = item.key !== null
+    ? '<span class="tree-key" data-path="' + escapeHtml(item.path) + '">"' + escapeHtml(String(item.key)) + '"</span>: '
+    : '';
+  if (item.val === null) {
+    return '<div class="tree-node">' + prefix + '<span class="tree-value json-null" data-path="' + escapeHtml(item.path) + '">null</span></div>';
+  }
+  if (typeof item.val === "boolean") {
+    return '<div class="tree-node">' + prefix + '<span class="tree-value json-boolean" data-path="' + escapeHtml(item.path) + '">' + item.val + '</span></div>';
+  }
+  if (typeof item.val === "number") {
+    return '<div class="tree-node">' + prefix + '<span class="tree-value json-number" data-path="' + escapeHtml(item.path) + '">' + item.val + '</span></div>';
+  }
+  if (typeof item.val === "string") {
+    return '<div class="tree-node">' + prefix + '<span class="tree-value json-string" data-path="' + escapeHtml(item.path) + '">"' + escapeHtml(item.val) + '"</span></div>';
+  }
+  return buildContainerNode(item, stack, prefix);
+}
+
+/* ===== BUILD CONTAINER NODE (object/array) ===== */
+function buildContainerNode(item, stack, prefix) {
+  assert(typeof item.val === "object", "container must be object/array");
+  assert(Array.isArray(stack), "stack must be array");
+  var isArr = Array.isArray(item.val);
+  var keys = isArr ? null : Object.keys(item.val);
+  var len = isArr ? item.val.length : keys.length;
+  var bound = Math.min(len, MAX_KEYS);
+  var bracket = isArr ? "[" : "{";
+  var closeBracket = isArr ? "]" : "}";
+  var label = isArr ? "Array(" + len + ")" : "Object(" + len + ")";
+  var open = '<div class="tree-node">';
+  open += '<span class="tree-toggle" data-expanded="true">&#9660;</span> ';
+  open += prefix + '<span class="json-bracket">' + bracket + '</span> ';
+  open += '<span style="color:var(--muted);font-size:0.75rem">' + label + '</span>';
+  open += '<div class="tree-children">';
+  /* Push close marker then children in reverse order */
+  stack.push({ _close: true, bracket: closeBracket });
+  for (var i = bound - 1; i >= 0; i--) {
+    var k = isArr ? i : keys[i];
+    var childPath = isArr ? item.path + "[" + i + "]" : item.path + "." + k;
+    stack.push({ val: item.val[k], key: k, path: childPath, depth: item.depth + 1 });
+  }
+  assert(typeof open === "string", "open must be string");
+  return open;
+}
+
+/* ===== RENDER OUTPUT BASED ON MODE ===== */
+function renderOutput(raw) {
+  assert(typeof raw === "string", "renderOutput requires string");
+  var bounded = truncateInput(raw);
+  var result = parseJson(bounded);
+
+  if (!result.ok) {
+    showError(result.error);
+    updateStats(bounded, null);
+    return;
+  }
+
+  appState.lastValid = result.parsed;
+  showValid();
+  updateStats(bounded, result.parsed);
+
+  if (appState.mode === "tree") {
+    outputEl.innerHTML = buildTreeHtml(result.parsed);
+    attachTreeListeners();
+  } else if (appState.mode === "minify") {
+    var min = minifyOutput(result.parsed);
+    outputEl.innerHTML = highlightJson(min);
+  } else {
+    var fmt = formatOutput(result.parsed, getIndent());
+    outputEl.innerHTML = highlightJson(fmt);
+  }
+}
+
+/* ===== SHOW ERROR ===== */
+function showError(msg) {
+  assert(typeof msg === "string", "showError requires string");
+  statusEl.className = "status invalid";
+  statusEl.textContent = "Invalid";
+  outputEl.innerHTML = '<div class="error-banner">Parse Error: ' + escapeHtml(msg) + '</div>';
+  assert(statusEl.textContent.length > 0, "status must be set");
+}
+
+/* ===== SHOW VALID ===== */
+function showValid() {
+  statusEl.className = "status valid";
+  statusEl.textContent = "\u2713 Valid JSON";
+  assert(statusEl.className.indexOf("valid") !== -1, "must show valid class");
+  assert(statusEl.textContent.length > 0, "status text must exist");
+}
+
+/* ===== UPDATE STATS ===== */
+function updateStats(raw, parsed) {
+  assert(typeof raw === "string", "updateStats requires string");
+  if (raw.trim().length === 0) {
+    statsEl.textContent = "";
+    return;
+  }
+  var chars = raw.length;
+  var lines = raw.split("\n").length;
+  var depth = parsed !== null ? computeDepth(parsed) : 0;
+  statsEl.textContent = chars + " chars | " + lines + " lines | depth " + depth;
+  assert(statsEl.textContent.length > 0, "stats must be set");
+}
+
+/* ===== ATTACH TREE CLICK LISTENERS ===== */
+function attachTreeListeners() {
+  assert(outputEl !== null, "outputEl must exist");
+  var toggles = outputEl.querySelectorAll(".tree-toggle");
+  var bound = Math.min(toggles.length, MAX_KEYS);
+  for (var i = 0; i < bound; i++) {
+    toggles[i].addEventListener("click", handleToggleClick);
+  }
+  var clickables = outputEl.querySelectorAll("[data-path]");
+  var bound2 = Math.min(clickables.length, MAX_KEYS);
+  for (var j = 0; j < bound2; j++) {
+    clickables[j].addEventListener("click", handlePathClick);
+  }
+  assert(typeof bound === "number", "bound must be number");
+}
+
+/* ===== HANDLE TOGGLE CLICK ===== */
+function handleToggleClick(e) {
+  assert(e !== null, "event must exist");
+  var toggle = e.target;
+  var children = toggle.parentElement.querySelector(".tree-children");
+  assert(toggle !== null, "toggle element must exist");
+  if (!children) { return; }
+  var expanded = toggle.getAttribute("data-expanded") === "true";
+  if (expanded) {
+    children.classList.add("collapsed");
+    toggle.innerHTML = "&#9654;";
+    toggle.setAttribute("data-expanded", "false");
+  } else {
+    children.classList.remove("collapsed");
+    toggle.innerHTML = "&#9660;";
+    toggle.setAttribute("data-expanded", "true");
+  }
+}
+
+/* ===== HANDLE PATH CLICK ===== */
+function handlePathClick(e) {
+  assert(e !== null, "event must exist");
+  var path = e.target.getAttribute("data-path");
+  assert(typeof path === "string" || path === null, "path must be string or null");
+  if (path) {
+    pathBar.textContent = path;
+  }
+}
+
+/* ===== DEBOUNCED INPUT HANDLER ===== */
+function handleInput() {
+  assert(inputEl !== null, "inputEl must exist");
+  if (appState.debounceTimer !== null) {
+    clearTimeout(appState.debounceTimer);
+  }
+  appState.debounceTimer = setTimeout(function() {
+    renderOutput(inputEl.value);
+    appState.debounceTimer = null;
+  }, DEBOUNCE_MS);
+  assert(appState.debounceTimer !== null, "timer must be set");
+}
+
+/* ===== COPY TO CLIPBOARD ===== */
+function copyOutput() {
+  assert(outputEl !== null, "outputEl must exist");
+  var text = outputEl.textContent || "";
+  assert(typeof text === "string", "text must be string");
+  if (text.length === 0) { return; }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text);
+  }
+}
+
+/* ===== LOAD SAMPLE JSON ===== */
+function loadSample() {
+  assert(inputEl !== null, "inputEl must exist");
+  var sample = {
+    "name": "JSON Formatter",
+    "version": "1.0.0",
+    "features": ["pretty-print", "minify", "tree-view", "validation"],
+    "config": {
+      "maxDepth": 50,
+      "debounceMs": 300,
+      "themes": ["light", "dark"]
+    },
+    "stats": { "stars": 42, "forks": 7, "issues": 0 },
+    "isPublic": true,
+    "license": null
+  };
+  inputEl.value = JSON.stringify(sample, null, 2);
+  renderOutput(inputEl.value);
+  assert(inputEl.value.length > 0, "sample must be loaded");
+}
+
+/* ===== SET MODE ===== */
+function setMode(mode) {
+  assert(typeof mode === "string", "mode must be string");
+  assert(["format","minify","tree"].indexOf(mode) !== -1, "mode must be valid");
+  appState.mode = mode;
+  updateButtonStates();
+  if (inputEl.value.trim().length > 0) {
+    renderOutput(inputEl.value);
+  }
+}
+
+/* ===== UPDATE BUTTON ACTIVE STATES ===== */
+function updateButtonStates() {
+  assert(typeof appState.mode === "string", "mode must be string");
+  var btnFormat = document.getElementById("btn-format");
+  var btnMinify = document.getElementById("btn-minify");
+  var btnTree = document.getElementById("btn-tree");
+  btnFormat.classList.toggle("active", appState.mode === "format");
+  btnMinify.classList.toggle("active", appState.mode === "minify");
+  btnTree.classList.toggle("active", appState.mode === "tree");
+  assert(btnFormat !== null, "format button must exist");
+}
+
+/* ===== TOGGLE THEME ===== */
+function toggleTheme() {
+  var html = document.documentElement;
+  var current = html.getAttribute("data-theme");
+  assert(html !== null, "html element must exist");
+  if (current === "dark") {
+    html.setAttribute("data-theme", "light");
+  } else {
+    html.setAttribute("data-theme", "dark");
+  }
+  assert(html.hasAttribute("data-theme"), "theme must be set");
+}
+
+/* ===== CLEAR ALL ===== */
+function clearAll() {
+  assert(inputEl !== null, "inputEl must exist");
+  assert(outputEl !== null, "outputEl must exist");
+  inputEl.value = "";
+  outputEl.innerHTML = "";
+  statusEl.className = "status";
+  statusEl.textContent = "";
+  statsEl.textContent = "";
+  pathBar.textContent = "Click a value in tree view to see its JSON path";
+  appState.lastValid = null;
+}
+
+/* ===== EVENT BINDING ===== */
+function bindEvents() {
+  assert(inputEl !== null, "inputEl must exist for binding");
+  assert(document.getElementById("btn-format") !== null, "buttons must exist");
+  inputEl.addEventListener("input", handleInput);
+  document.getElementById("btn-format").addEventListener("click", function() { setMode("format"); });
+  document.getElementById("btn-minify").addEventListener("click", function() { setMode("minify"); });
+  document.getElementById("btn-tree").addEventListener("click", function() { setMode("tree"); });
+  document.getElementById("btn-copy").addEventListener("click", copyOutput);
+  document.getElementById("btn-clear").addEventListener("click", clearAll);
+  document.getElementById("btn-sample").addEventListener("click", loadSample);
+  document.getElementById("btn-theme").addEventListener("click", toggleTheme);
+  selIndent.addEventListener("change", function() {
+    if (appState.mode === "format" && inputEl.value.trim().length > 0) {
+      renderOutput(inputEl.value);
+    }
+  });
+}
+
+/* ===== INIT ===== */
+function init() {
+  assert(document.readyState !== "loading", "DOM must be ready");
+  assert(inputEl !== null, "inputEl must exist at init");
+  bindEvents();
+  updateButtonStates();
+  if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }
+}
+
+/* ===== BOOT ===== */
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
+
+})();
+</script>
+</body>
+</html>
